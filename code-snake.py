@@ -1,11 +1,12 @@
 import pygame, sys , random
-from   pygame.math import Vector2
-#here
+from pygame.math import Vector2
+from PIL import Image
+# Classe du serpent
 class SNAKE:
     def __init__(self):
         self.corps = [Vector2(5, 5), Vector2(4, 5), Vector2(3, 5)]  
         self.direction = Vector2(1, 0)
-        
+
     def afficher_serpent(self):
         for blocks in self.corps:
             serpent_rect = pygame.Rect(blocks.x * case_size, blocks.y * case_size, case_size, case_size)
@@ -16,26 +17,30 @@ class SNAKE:
             corps_copie = self.corps[:-1]   
             corps_copie.insert(0, corps_copie[0] + self.direction) 
             self.corps = corps_copie[:]
-    
+
     def collision(self):
+       # Vérifie si la tête du serpent touche le fruit
         if snake.corps[0] == fruit.position:
-            corps_copie = self.corps[:]   
-            corps_copie.insert(0, corps_copie[0] + self.direction) 
-            self.corps = corps_copie[:]
-            fruit.reinitialiser_position(snake.corps)
+          corps_copie = self.corps[:]  # Crée une copie du corps du serpent
+          corps_copie.append(corps_copie[-1])  # Ajoute un nouveau bloc à la fin du serpent (même position que le dernier bloc)
+          self.corps = corps_copie[:]  # Met à jour le corps du serpent avec la nouvelle copie
+          fruit.reinitialiser_position(snake.corps) 
         
+        # Vérifie si la tête du serpent touche les murs
         if snake.corps[0].x < 0 or snake.corps[0].x >= nb_de_cases or snake.corps[0].y < 0 or snake.corps[0].y >= nb_de_cases:
             pygame.quit()
             sys.exit()
 
-        for block2 in snake.corps[1:]:  # Compare la tête avec chaque autre segment
-            if snake.corps[0] == block2:
-                pygame.quit()
-                sys.exit()
+        # Vérifie si la tête du serpent touche son propre corps
+        for block2 in self.corps[1:]:  # Compare la tête avec chaque autre segment
+           if self.corps[0] == block2:
+               pygame.quit()
+               sys.exit()
 
+# Classe du fruit
 class FRUIT:
-    def init(self):
-        self.position = self.generer_position([])  # Initialise sans positions du snake
+    def __init__(self):
+        self.position = self.generer_position([])  # Initialise avec une position générée aléatoirement
 
     def generer_position(self, snake_positions):
         while True:
@@ -44,12 +49,12 @@ class FRUIT:
             y = random.randint(0, nb_de_cases - 1)
             new_position = Vector2(x, y)
 
-
+            # S'assurer que la nouvelle position ne se trouve pas sur le serpent
             if new_position not in snake_positions:
                 return new_position  # Retourne la position valide
 
     def reinitialiser_position(self, snake_positions):
-        # Réinitialise la position du fruit en évitant le snake
+        # Réinitialise la position du fruit en évitant le serpent
         self.position = self.generer_position(snake_positions)
 
     def afficher_fruit(self):
@@ -59,10 +64,31 @@ class FRUIT:
             case_size, 
             case_size
         )
-        pygame.draw.ellipse(ecran, (255, 0, 0), fruit_rect)
+        ecran.blit(apple , fruit_rect)
+        #pygame.draw.ellipse(ecran, (255, 0, 0), fruit_rect)
 
+class game :
+    #ndiro fiha game over 
+    def __init__(self):
+        self.snake = SNAKE()
+        self.fruit = FRUIT()
+    def mode_échiquier(self):
+        for y in range(nb_de_cases):
+            for x in range(nb_de_cases):
+                # Alternance de couleurs en fonction de la somme des indices x et y
+                color = (0, 180, 0) if (x + y) % 2 == 0 else (0, 255, 0)
+                pygame.draw.rect(ecran, color, (x * case_size, y * case_size, case_size, case_size))
+    def score(self):
+        score_texte = str(len(self.snake.corps)  - 3)
+        score_surface = game_font.render(score_texte ,True , (200 ,70 , 10))
+        score_x = int (case_size * nb_de_cases-60)
+        score_y = int (case_size * nb_de_cases-40)
+        score_rect = score_surface.get_rect(center =(score_x,score_y))
+        apple_rect = apple.get_rect(midright = (score_rect.left , score_rect.centery))
     
-
+        ecran.blit(score_surface , score_rect)
+       
+# Initialisation de pygame
 pygame.init()
 
 case_size = 30 
@@ -71,18 +97,27 @@ ecran = pygame.display.set_mode((nb_de_cases * case_size, nb_de_cases * case_siz
 clock = pygame.time.Clock()
 fruit = FRUIT()
 snake = SNAKE()
-
+game = game()
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE , 150)
-#150 ms
+pygame.time.set_timer(SCREEN_UPDATE , 120)
 
-# Fonction pour dessiner l'échiquier
-def mode_échiquier():
-    for y in range(nb_de_cases):
-        for x in range(nb_de_cases):
-            # Alternance de couleurs en fonction de la somme des indices x et y
-            color = (0, 180, 0) if (x + y) % 2 == 0 else (0, 255, 0)
-            pygame.draw.rect(ecran, color, (x * case_size, y * case_size, case_size, case_size))
+image_path = 'apple-pin.png'
+image = Image.open(image_path)
+
+# Resize the image to 30x30 pixels
+resized_image = image.resize((30, 30))
+
+# Save the resized image
+resized_image_path = 'apple-pin.png'
+resized_image.save(resized_image_path)
+
+resized_image_path
+
+apple = pygame.image.load('apple-pin.png').convert_alpha()
+
+game_font = pygame.font.Font(None , 25)
+
+
 
 while True:
     for event in pygame.event.get():
@@ -102,9 +137,11 @@ while True:
                 snake.direction = Vector2(-1, 0)
 
     # Dessiner l'échiquier
-    mode_échiquier()
+    game.mode_échiquier()
+    
     fruit.afficher_fruit()
-    snake.collision()
-    snake.afficher_serpent()
+    game.score()
+    snake.collision()  # Vérifie les collisions
+    snake.afficher_serpent()  # Affiche le serpent
     pygame.display.update()
     clock.tick(60)
