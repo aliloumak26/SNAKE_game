@@ -19,12 +19,14 @@ class SNAKE:
             self.corps = corps_copie[:]
 
     def collision(self):
-       # Vérifie si la tête du serpent touche le fruit
+    # Vérifie si la tête du serpent touche le fruit
         if snake.corps[0] == fruit.position:
-          corps_copie = self.corps[:]  # Crée une copie du corps du serpent
-          corps_copie.append(corps_copie[-1])  # Ajoute un nouveau bloc à la fin du serpent (même position que le dernier bloc)
-          self.corps = corps_copie[:]  # Met à jour le corps du serpent avec la nouvelle copie
-          fruit.reinitialiser_position(snake.corps) 
+            corps_copie = self.corps[:]  # Crée une copie du corps du serpent
+            corps_copie.append(corps_copie[-1])  # Ajoute un nouveau bloc à la fin du serpent
+            self.corps = corps_copie[:]  # Met à jour le corps du serpent avec la nouvelle copie
+            fruit.reinitialiser_position(snake.corps)
+            game.score_value += 1  # Augmente le score de 1
+          
         
         # Vérifie si la tête du serpent touche les murs
         if snake.corps[0].x < 0 or snake.corps[0].x >= nb_de_cases or snake.corps[0].y < 0 or snake.corps[0].y >= nb_de_cases:
@@ -72,6 +74,7 @@ class game :
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT()
+        self.score_value = 0 ; 
     def mode_échiquier(self):
         for y in range(nb_de_cases):
             for x in range(nb_de_cases):
@@ -79,14 +82,13 @@ class game :
                 color = (0, 180, 0) if (x + y) % 2 == 0 else (0, 255, 0)
                 pygame.draw.rect(ecran, color, (x * case_size, y * case_size, case_size, case_size))
     def score(self):
-        score_texte = str(len(self.snake.corps)  - 3)
-        score_surface = game_font.render(score_texte ,True , (200 ,70 , 10))
-        score_x = int (case_size * nb_de_cases-60)
-        score_y = int (case_size * nb_de_cases-40)
-        score_rect = score_surface.get_rect(center =(score_x,score_y))
-        apple_rect = apple.get_rect(midright = (score_rect.left , score_rect.centery))
-    
-        ecran.blit(score_surface , score_rect)
+        score_texte = str(self.score_value)  # Utilise la variable score_value
+        score_surface = game_font.render(score_texte, True, (200, 70, 10))
+        score_x = int(case_size * nb_de_cases - 60)
+        score_y = int(case_size * nb_de_cases - 40)
+        score_rect = score_surface.get_rect(center=(score_x, score_y))
+        apple_rect = apple.get_rect(midright=(score_rect.left, score_rect.centery))
+        ecran.blit(score_surface, score_rect)
        
 # Initialisation de pygame
 pygame.init()
