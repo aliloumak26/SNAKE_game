@@ -36,6 +36,8 @@ class SNAKE:
 class FRUIT:
     def __init__(self):
         self.position = self.generer_position([])
+        self.image = pygame.image.load("apple-pin.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (case_size, case_size))
 
     def generer_position(self, snake_positions):
         while True:
@@ -48,14 +50,18 @@ class FRUIT:
     def reinitialiser_position(self, snake_positions):
         self.position = self.generer_position(snake_positions)
 
+    
     def afficher_fruit(self):
         fruit_rect = pygame.Rect(
-            int(self.position.x * case_size),
-            int(self.position.y * case_size),
-            case_size,
-            case_size
+        int(self.position.x * case_size),
+        int(self.position.y * case_size),
+        case_size,
+        case_size
         )
-        pygame.draw.ellipse(ecran, (255, 0, 0), fruit_rect)
+    
+        # Charger l'image du fruit (à faire UNE SEULE FOIS dans __init__)
+        ecran.blit(self.image, fruit_rect)
+
 
 pygame.init()
 
@@ -105,3 +111,4 @@ while True:
 
     pygame.display.update()
     clock.tick(60)
+
