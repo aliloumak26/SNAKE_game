@@ -1,7 +1,6 @@
 import pygame, sys, random
 from pygame.math import Vector2
 
-
 class SNAKE:
     def __init__(self):
         self.corps = [Vector2(5, 5), Vector2(4, 5), Vector2(3, 5)]
@@ -76,6 +75,11 @@ def mode_échiquier():
             color = (0, 180, 0) if (x + y) % 2 == 0 else (0, 255, 0)
             pygame.draw.rect(ecran, color, (x * case_size, y * case_size, case_size, case_size))
 
+def afficher_score(surface, score):
+    font = pygame.font.SysFont("arial", 24, True)
+    texte = font.render(f"Score : {score}", True, (255, 255, 255))
+    surface.blit(texte, (10, 10))
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -97,5 +101,7 @@ while True:
     fruit.afficher_fruit()
     snake.collision()
     snake.afficher_serpent()
+    afficher_score(ecran, len(snake.corps) - 2)
+
     pygame.display.update()
     clock.tick(60)
